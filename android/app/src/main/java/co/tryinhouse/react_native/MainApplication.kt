@@ -1,4 +1,4 @@
-package co.tryinhouse.android_example
+package co.tryinhouse.react_native
 
 import android.app.Application
 import com.facebook.react.PackageList
@@ -34,4 +34,4 @@ class MainApplication : Application(), ReactApplication {
     super.onCreate()
     loadReactNative(this)
   }
-}
+} 

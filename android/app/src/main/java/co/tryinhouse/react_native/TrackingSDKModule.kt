@@ -1,4 +1,4 @@
-package co.tryinhouse.android_example
+package co.tryinhouse.react_native
 
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
@@ -143,4 +143,4 @@ class TrackingSDKModule(reactContext: ReactApplicationContext) : ReactContextBas
             Log.e("TrackingSDKModule", "Error setting current activity", e)
         }
     }
-}
+} 

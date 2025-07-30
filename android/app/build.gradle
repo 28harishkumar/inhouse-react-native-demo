@@ -77,9 +77,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace "co.tryinhouse.android_example"
+    namespace "co.tryinhouse.react_native"
     defaultConfig {
-        applicationId "co.tryinhouse.android_example"
+        applicationId "co.tryinhouse.react_native"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

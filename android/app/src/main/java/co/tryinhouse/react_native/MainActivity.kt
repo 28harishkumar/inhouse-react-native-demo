@@ -1,4 +1,4 @@
-package co.tryinhouse.android_example
+package co.tryinhouse.react_native
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
@@ -19,4 +19,4 @@ class MainActivity : ReactActivity() {
    */
   override fun createReactActivityDelegate(): ReactActivityDelegate =
       DefaultReactActivityDelegate(this, mainComponentName, fabricEnabled)
-}
+} 
