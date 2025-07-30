@@ -21,6 +21,32 @@
             <action android:name="android.intent.action.MAIN" />
             <category android:name="android.intent.category.LAUNCHER" />
         </intent-filter>
+        <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="myandroidapp"/>
+            </intent-filter>
+
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <!-- Do not include other schemes. -->
+                <data android:scheme="http" />
+                <data android:scheme="https" />
+
+                <data android:host="new-projec.tryinhouse.co" />
+            </intent-filter>
       </activity>
+
+      <receiver
+        android:name="co.tryinhouse.android.InstallReferrerReceiver"
+        android:exported="true">
+        <intent-filter>
+            <action android:name="com.android.vending.INSTALL_REFERRER" />
+        </intent-filter>
+      </receiver>
     </application>
 </manifest>

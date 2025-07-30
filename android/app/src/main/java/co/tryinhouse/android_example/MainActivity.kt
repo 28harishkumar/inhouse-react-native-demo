@@ -1,4 +1,4 @@
-package com.myapp
+package co.tryinhouse.android_example
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
