@@ -23,7 +23,7 @@ allprojects {
         google()
         mavenCentral()
         flatDir {
-            dirs '../react-native-inhouse-sdk/android/libs'
+            dirs '../node_modules/react-native-inhouse-sdk/android/libs'
         }
     }
 }

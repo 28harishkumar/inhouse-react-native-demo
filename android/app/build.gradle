@@ -129,7 +129,4 @@ dependencies {
     } else {
         implementation jscFlavor
     }
-
-    // Add the SDK as a project dependency
-    implementation project(':react-native-inhouse-sdk')
 }

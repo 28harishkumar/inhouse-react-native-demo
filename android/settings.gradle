@@ -3,6 +3,4 @@ plugins { id("com.facebook.react.settings") }
 extensions.configure(com.facebook.react.ReactSettingsExtension){ ex -> ex.autolinkLibrariesFromCommand() }
 rootProject.name = 'MyApp'
 include ':app'
-include ':react-native-inhouse-sdk'
-project(':react-native-inhouse-sdk').projectDir = new File(rootProject.projectDir, '../../react-native-inhouse-sdk/android')
 includeBuild('../node_modules/@react-native/gradle-plugin')
