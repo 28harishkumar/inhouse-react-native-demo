@@ -1,4 +1,4 @@
-package co.tryinhouse.react_native
+package co.tryinhouse.rn_demo
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate

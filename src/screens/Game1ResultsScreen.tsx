@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../App';
-import TrackingSDK from '../TrackingSDK';
+import TrackingSDK from 'react-native-inhouse-sdk';
 
 type Game1ResultsScreenRouteProp = RouteProp<
   RootStackParamList,
@@ -22,6 +22,7 @@ const Game1ResultsScreen: React.FC = () => {
 
   const playAgain = async () => {
     try {
+      if (!TrackingSDK) { console.error('TrackingSDK is not available'); return; }
       await TrackingSDK.trackShortLinkClick(
         'game1-play-again-link',
         'game1://play-again',
@@ -34,6 +35,7 @@ const Game1ResultsScreen: React.FC = () => {
 
   const goHome = async () => {
     try {
+      if (!TrackingSDK) { console.error('TrackingSDK is not available'); return; }
       await TrackingSDK.trackShortLinkClick('game1-home-link', 'game1://home');
       navigation.navigate('Home' as never);
     } catch (error) {

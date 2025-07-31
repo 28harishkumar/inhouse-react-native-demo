@@ -1,19 +1,30 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Button, Alert } from 'react-native';
-import TrackingSDK, { TrackingSDKCallback } from './TrackingSDK';
+import {
+  View,
+  Text,
+  Button,
+  Alert,
+  StyleSheet,
+  ScrollView,
+} from 'react-native';
+import TrackingSDK, { TrackingSDKCallback } from 'react-native-inhouse-sdk';
 
 const TrackingSDKExample: React.FC = () => {
   const [isInitialized, setIsInitialized] = useState(false);
   const [installReferrer, setInstallReferrer] = useState<string>('');
 
   useEffect(() => {
-    // Initialize the TrackingSDK
+    // Initialize the SDK automatically
     initializeTrackingSDK();
 
     // Add callback listener
+    if (!TrackingSDK) {
+      console.error('TrackingSDK is not available');
+      return;
+    }
     const subscription = TrackingSDK.addCallbackListener(
       (data: TrackingSDKCallback) => {
-        console.log('TrackingSDK Callback:', data);
+        console.log('SDK Callback:', data);
         Alert.alert(
           'SDK Callback',
           `Type: ${data.callbackType}\nData: ${data.data}`,
@@ -24,30 +35,40 @@ const TrackingSDKExample: React.FC = () => {
     // Cleanup on unmount
     return () => {
       subscription.remove();
-      TrackingSDK.removeAllListeners();
+      if (TrackingSDK) {
+        TrackingSDK.removeAllListeners();
+      }
     };
   }, []);
 
   const initializeTrackingSDK = async () => {
     try {
+      if (!TrackingSDK) {
+        console.error('TrackingSDK is not available');
+        return;
+      }
       await TrackingSDK.initialize(
-        'your-project-id', // Replace with your actual project ID
-        'your-project-token', // Replace with your actual project token
-        'your-short-link-domain', // Replace with your actual short link domain
-        'https://your-api-server.com', // Replace with your actual server URL
-        true, // Enable debug logging
+        'demo-project-id',
+        'demo-project-token',
+        'demo-shortlink-domain',
+        'https://api.tryinhouse.co',
+        true, // Enable debug logging for demo
       );
       setIsInitialized(true);
-      Alert.alert('Success', 'TrackingSDK initialized successfully!');
+      Alert.alert('Success', 'SDK initialized successfully!');
     } catch (error) {
-      console.error('Failed to initialize TrackingSDK:', error);
-      Alert.alert('Error', 'Failed to initialize TrackingSDK');
+      console.error('Failed to initialize SDK:', error);
+      Alert.alert('Error', 'Failed to initialize SDK');
     }
   };
 
   const handleTrackAppOpen = async () => {
     try {
-      const result = await TrackingSDK.trackAppOpen('your-short-link');
+      if (!TrackingSDK) {
+        Alert.alert('Error', 'TrackingSDK is not available');
+        return;
+      }
+      const result = await TrackingSDK.trackAppOpen('demo-shortlink');
       Alert.alert('Success', `App open tracked: ${result}`);
     } catch (error) {
       console.error('Failed to track app open:', error);
@@ -57,7 +78,11 @@ const TrackingSDKExample: React.FC = () => {
 
   const handleTrackSessionStart = async () => {
     try {
-      const result = await TrackingSDK.trackSessionStart('your-short-link');
+      if (!TrackingSDK) {
+        Alert.alert('Error', 'TrackingSDK is not available');
+        return;
+      }
+      const result = await TrackingSDK.trackSessionStart('demo-shortlink');
       Alert.alert('Success', `Session start tracked: ${result}`);
     } catch (error) {
       console.error('Failed to track session start:', error);
@@ -67,9 +92,13 @@ const TrackingSDKExample: React.FC = () => {
 
   const handleTrackShortLinkClick = async () => {
     try {
+      if (!TrackingSDK) {
+        Alert.alert('Error', 'TrackingSDK is not available');
+        return;
+      }
       const result = await TrackingSDK.trackShortLinkClick(
-        'your-short-link',
-        'your-deep-link',
+        'demo-shortlink',
+        'demo-deeplink',
       );
       Alert.alert('Success', `Short link click tracked: ${result}`);
     } catch (error) {
@@ -80,6 +109,10 @@ const TrackingSDKExample: React.FC = () => {
 
   const handleGetInstallReferrer = async () => {
     try {
+      if (!TrackingSDK) {
+        Alert.alert('Error', 'TrackingSDK is not available');
+        return;
+      }
       const referrer = await TrackingSDK.getInstallReferrer();
       setInstallReferrer(referrer);
       Alert.alert('Success', `Install referrer: ${referrer}`);
@@ -91,6 +124,10 @@ const TrackingSDKExample: React.FC = () => {
 
   const handleFetchInstallReferrer = async () => {
     try {
+      if (!TrackingSDK) {
+        Alert.alert('Error', 'TrackingSDK is not available');
+        return;
+      }
       const referrer = await TrackingSDK.fetchInstallReferrer();
       setInstallReferrer(referrer);
       Alert.alert('Success', `Fetched install referrer: ${referrer}`);
@@ -102,6 +139,10 @@ const TrackingSDKExample: React.FC = () => {
 
   const handleResetFirstInstall = async () => {
     try {
+      if (!TrackingSDK) {
+        console.error('TrackingSDK is not available');
+        return;
+      }
       await TrackingSDK.resetFirstInstall();
       Alert.alert('Success', 'First install reset successfully');
     } catch (error) {
@@ -112,6 +153,10 @@ const TrackingSDKExample: React.FC = () => {
 
   const handleOnAppResume = async () => {
     try {
+      if (!TrackingSDK) {
+        console.error('TrackingSDK is not available');
+        return;
+      }
       await TrackingSDK.onAppResume();
       Alert.alert('Success', 'App resume tracked');
     } catch (error) {
@@ -121,58 +166,132 @@ const TrackingSDKExample: React.FC = () => {
   };
 
   return (
-    <View style={{ flex: 1, padding: 20, justifyContent: 'center' }}>
-      <Text
-        style={{
-          fontSize: 24,
-          fontWeight: 'bold',
-          marginBottom: 20,
-          textAlign: 'center',
-        }}
-      >
-        TrackingSDK Example
-      </Text>
+    <ScrollView style={styles.container}>
+      <View style={styles.content}>
+        <Text style={styles.title}>React Native Inhouse SDK Demo</Text>
 
-      <Text style={{ marginBottom: 10 }}>
-        Status: {isInitialized ? 'Initialized' : 'Not Initialized'}
-      </Text>
+        <View style={styles.statusContainer}>
+          <Text style={styles.statusLabel}>Status:</Text>
+          <Text
+            style={[
+              styles.statusText,
+              { color: isInitialized ? 'green' : 'red' },
+            ]}
+          >
+            {isInitialized ? 'Initialized' : 'Not Initialized'}
+          </Text>
+        </View>
 
-      {installReferrer ? (
-        <Text style={{ marginBottom: 10 }}>
-          Install Referrer: {installReferrer}
-        </Text>
-      ) : null}
+        {installReferrer && (
+          <View style={styles.referrerContainer}>
+            <Text style={styles.referrerLabel}>Install Referrer:</Text>
+            <Text style={styles.referrerText}>{installReferrer}</Text>
+          </View>
+        )}
 
-      <Button title="Initialize SDK" onPress={initializeTrackingSDK} />
-      <View style={{ height: 10 }} />
-
-      <Button title="Track App Open" onPress={handleTrackAppOpen} />
-      <View style={{ height: 10 }} />
-
-      <Button title="Track Session Start" onPress={handleTrackSessionStart} />
-      <View style={{ height: 10 }} />
-
-      <Button
-        title="Track Short Link Click"
-        onPress={handleTrackShortLinkClick}
-      />
-      <View style={{ height: 10 }} />
-
-      <Button title="Get Install Referrer" onPress={handleGetInstallReferrer} />
-      <View style={{ height: 10 }} />
-
-      <Button
-        title="Fetch Install Referrer"
-        onPress={handleFetchInstallReferrer}
-      />
-      <View style={{ height: 10 }} />
-
-      <Button title="Reset First Install" onPress={handleResetFirstInstall} />
-      <View style={{ height: 10 }} />
-
-      <Button title="On App Resume" onPress={handleOnAppResume} />
-    </View>
+        <View style={styles.buttonContainer}>
+          <Button title="Initialize SDK" onPress={initializeTrackingSDK} />
+          <View style={styles.buttonSpacer} />
+          <Button title="Track App Open" onPress={handleTrackAppOpen} />
+          <View style={styles.buttonSpacer} />
+          <Button
+            title="Track Session Start"
+            onPress={handleTrackSessionStart}
+          />
+          <View style={styles.buttonSpacer} />
+          <Button
+            title="Track Short Link Click"
+            onPress={handleTrackShortLinkClick}
+          />
+          <View style={styles.buttonSpacer} />
+          <Button
+            title="Get Install Referrer"
+            onPress={handleGetInstallReferrer}
+          />
+          <View style={styles.buttonSpacer} />
+          <Button
+            title="Fetch Install Referrer"
+            onPress={handleFetchInstallReferrer}
+          />
+          <View style={styles.buttonSpacer} />
+          <Button
+            title="Reset First Install"
+            onPress={handleResetFirstInstall}
+          />
+          <View style={styles.buttonSpacer} />
+          <Button title="On App Resume" onPress={handleOnAppResume} />
+        </View>
+      </View>
+    </ScrollView>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f5f5f5',
+  },
+  content: {
+    padding: 20,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 20,
+    color: '#333',
+  },
+  statusContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+    padding: 15,
+    backgroundColor: 'white',
+    borderRadius: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  statusLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginRight: 10,
+    color: '#333',
+  },
+  statusText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  referrerContainer: {
+    marginBottom: 20,
+    padding: 15,
+    backgroundColor: 'white',
+    borderRadius: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  referrerLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 5,
+    color: '#333',
+  },
+  referrerText: {
+    fontSize: 14,
+    color: '#666',
+    fontFamily: 'monospace',
+  },
+  buttonContainer: {
+    gap: 10,
+  },
+  buttonSpacer: {
+    height: 10,
+  },
+});
 
 export default TrackingSDKExample;

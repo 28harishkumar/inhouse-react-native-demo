@@ -73,3 +73,4 @@ yarn-error.log
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+react-native-inhouse-sdk

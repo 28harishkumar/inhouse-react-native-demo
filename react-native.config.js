@@ -29,5 +29,15 @@ module.exports = {
         },
       },
     },
+    'react-native-inhouse-sdk': {
+      platforms: {
+        android: {
+          sourceDir: '../react-native-inhouse-sdk/android',
+          packageImportPath:
+            'import co.tryinhouse.react_native.TrackingSDKPackage;',
+          packageInstance: 'new TrackingSDKPackage()',
+        },
+      },
+    },
   },
 };

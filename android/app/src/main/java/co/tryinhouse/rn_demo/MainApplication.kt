@@ -1,4 +1,4 @@
-package co.tryinhouse.react_native
+package co.tryinhouse.rn_demo
 
 import android.app.Application
 import com.facebook.react.PackageList
@@ -15,9 +15,7 @@ class MainApplication : Application(), ReactApplication {
   override val reactNativeHost: ReactNativeHost =
       object : DefaultReactNativeHost(this) {
         override fun getPackages(): List<ReactPackage> =
-            PackageList(this).packages.apply {
-              add(TrackingSDKPackage())
-            }
+            PackageList(this).packages
 
         override fun getJSMainModuleName(): String = "index"
 

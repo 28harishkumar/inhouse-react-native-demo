@@ -8,14 +8,18 @@ import {
   Alert,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import TrackingSDK from '../TrackingSDK';
+import TrackingSDK from 'react-native-inhouse-sdk';
 
 const HomeScreen: React.FC = () => {
   const navigation = useNavigation();
 
   const handleTrackAppOpen = async () => {
     try {
-      await TrackingSDK.trackAppOpen('home-screen-link');
+      if (!TrackingSDK) {
+        Alert.alert('Error', 'TrackingSDK is not available');
+        return;
+      }
+      await TrackingSDK.trackAppOpen('https://new-projec.tryinhouse.co/5e5ec1');
       Alert.alert('Success', 'App open tracked successfully!');
     } catch (error) {
       Alert.alert('Error', 'Failed to track app open');
@@ -24,6 +28,10 @@ const HomeScreen: React.FC = () => {
 
   const handleTrackSessionStart = async () => {
     try {
+      if (!TrackingSDK) {
+        Alert.alert('Error', 'TrackingSDK is not available');
+        return;
+      }
       await TrackingSDK.trackSessionStart('home-session-link');
       Alert.alert('Success', 'Session start tracked successfully!');
     } catch (error) {

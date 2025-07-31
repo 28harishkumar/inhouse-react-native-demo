@@ -8,15 +8,26 @@ import {
   ScrollView,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import TrackingSDK from '../TrackingSDK';
+import { StackNavigationProp } from '@react-navigation/stack';
+import TrackingSDK from 'react-native-inhouse-sdk';
+import { RootStackParamList } from '../App';
+
+type Game1ScreenNavigationProp = StackNavigationProp<
+  RootStackParamList,
+  'Game1'
+>;
 
 const Game1Screen: React.FC = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<Game1ScreenNavigationProp>();
   const [score, setScore] = useState(0);
   const [gameStarted, setGameStarted] = useState(false);
 
   const startGame = async () => {
     try {
+      if (!TrackingSDK) {
+        Alert.alert('Error', 'TrackingSDK is not available');
+        return;
+      }
       await TrackingSDK.trackShortLinkClick(
         'game1-start-link',
         'game1://start',
@@ -33,6 +44,10 @@ const Game1Screen: React.FC = () => {
     setScore(newScore);
 
     try {
+      if (!TrackingSDK) {
+        console.error('TrackingSDK is not available');
+        return;
+      }
       await TrackingSDK.trackShortLinkClick(
         'game1-score-link',
         `game1://score/${newScore}`,
@@ -44,11 +59,15 @@ const Game1Screen: React.FC = () => {
 
   const endGame = async () => {
     try {
+      if (!TrackingSDK) {
+        Alert.alert('Error', 'TrackingSDK is not available');
+        return;
+      }
       await TrackingSDK.trackShortLinkClick(
         'game1-end-link',
         `game1://end/${score}`,
       );
-      navigation.navigate('Game1Results' as never, { score } as never);
+      navigation.navigate('Game1Results', { score });
     } catch (error) {
       Alert.alert('Error', 'Failed to end game');
     }

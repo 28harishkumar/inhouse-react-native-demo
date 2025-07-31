@@ -8,7 +8,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import TrackingSDK from '../TrackingSDK';
+import TrackingSDK from 'react-native-inhouse-sdk';
 
 const Game2Screen: React.FC = () => {
   const navigation = useNavigation();
@@ -17,6 +17,7 @@ const Game2Screen: React.FC = () => {
 
   const startGame = async () => {
     try {
+      if (!TrackingSDK) { console.error('TrackingSDK is not available'); return; }
       await TrackingSDK.trackShortLinkClick(
         'game2-start-link',
         'game2://start',
@@ -36,6 +37,7 @@ const Game2Screen: React.FC = () => {
     setLevel(newLevel);
 
     try {
+      if (!TrackingSDK) { console.error('TrackingSDK is not available'); return; }
       await TrackingSDK.trackShortLinkClick(
         'game2-level-link',
         `game2://level/${newLevel}`,
@@ -47,6 +49,7 @@ const Game2Screen: React.FC = () => {
 
   const completeGame = async () => {
     try {
+      if (!TrackingSDK) { console.error('TrackingSDK is not available'); return; }
       await TrackingSDK.trackShortLinkClick(
         'game2-complete-link',
         `game2://complete/${level}`,

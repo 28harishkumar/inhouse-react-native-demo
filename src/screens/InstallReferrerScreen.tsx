@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import TrackingSDK from '../TrackingSDK';
+import TrackingSDK from 'react-native-inhouse-sdk';
 
 const InstallReferrerScreen: React.FC = () => {
   const navigation = useNavigation();
@@ -9,6 +9,10 @@ const InstallReferrerScreen: React.FC = () => {
 
   const fetchReferrer = async () => {
     try {
+      if (!TrackingSDK) {
+        Alert.alert('Error', 'TrackingSDK is not available');
+        return;
+      }
       const result = await TrackingSDK.getInstallReferrer();
       setReferrer(result);
       Alert.alert('Install Referrer', result);

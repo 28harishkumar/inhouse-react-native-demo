@@ -7,7 +7,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { Linking } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import TrackingSDK, { TrackingSDKCallback } from './TrackingSDK';
+import TrackingSDK, { TrackingSDKCallback } from 'react-native-inhouse-sdk';
 
 // Import all screens
 import HomeScreen from './screens/HomeScreen';
@@ -89,6 +89,13 @@ const App: React.FC = () => {
 
   const initializeTrackingSDK = async () => {
     try {
+      // Check if TrackingSDK is available
+      if (!TrackingSDK) {
+        console.error('TrackingSDK is not available');
+        setIsInitialized(true); // Still allow app to work without SDK
+        return;
+      }
+
       await TrackingSDK.initialize(
         '51225fce-013c-4dbe-83f8-f50f625ac273',
         'k4H_d7U3qbc_lukp4o9gnfxu4nSvNEmdh6hp1Ghsghs',
@@ -100,6 +107,7 @@ const App: React.FC = () => {
       console.log('TrackingSDK initialized successfully');
     } catch (error) {
       console.error('Failed to initialize TrackingSDK:', error);
+      setIsInitialized(true); // Still allow app to work without SDK
     }
   };
 
@@ -119,17 +127,30 @@ const App: React.FC = () => {
       }
     });
 
-    // Add callback listener for TrackingSDK
-    const sdkSubscription = TrackingSDK.addCallbackListener(
-      (data: TrackingSDKCallback) => {
-        console.log('SDK Callback:', data);
-        handleSDKCallback(data);
-      },
-    );
+    // Add callback listener for TrackingSDK only if it's available
+    let sdkSubscription: any = null;
+    if (TrackingSDK) {
+      try {
+        sdkSubscription = TrackingSDK.addCallbackListener(
+          (data: TrackingSDKCallback) => {
+            console.log('SDK Callback:', data);
+            handleSDKCallback(data);
+          },
+        );
+      } catch (error) {
+        console.error('Failed to add SDK callback listener:', error);
+      }
+    }
 
     return () => {
       subscription?.remove();
-      sdkSubscription.remove();
+      if (sdkSubscription) {
+        try {
+          sdkSubscription.remove();
+        } catch (error) {
+          console.error('Failed to remove SDK callback listener:', error);
+        }
+      }
     };
   };
 

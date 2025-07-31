@@ -1,195 +1,325 @@
-# TrackingSDK Integration Guide
+# React Native Inhouse SDK Integration Guide
 
-This guide explains how to use the integrated TrackingSDK in your React Native app.
+This guide explains how to integrate the React Native Inhouse SDK into your project following best practices.
 
-## Setup
+## Installation
 
-The TrackingSDK has been integrated with the following components:
+### 1. Install the SDK
 
-### 1. Native Module (`TrackingSDKModule.kt`)
-
-- Located at: `android/app/src/main/java/com/myapp/TrackingSDKModule.kt`
-- Provides native Android implementation for all TrackingSDK methods
-
-### 2. React Package (`TrackingSDKPackage.kt`)
-
-- Located at: `android/app/src/main/java/com/myapp/TrackingSDKPackage.kt`
-- Registers the native module with React Native
-
-### 3. TypeScript Interface (`TrackingSDK.ts`)
-
-- Located at: `src/TrackingSDK.ts`
-- Provides TypeScript definitions and wrapper for the native module
-
-### 4. Example Component (`TrackingSDKExample.tsx`)
-
-- Located at: `src/TrackingSDKExample.tsx`
-- Shows how to use all TrackingSDK methods
-
-## Dependencies
-
-The following dependencies have been added:
-
-### Android Build Configuration
-
-- **Maven Repository**: Added `mavenLocal()` to support local Maven dependencies
-- **TrackingSDK Dependency**: `co.tryinhouse.android:sdk:1.0.0`
-
-### Files Modified
-
-1. `android/build.gradle` - Added Maven repository configuration
-2. `android/app/build.gradle` - Added TrackingSDK dependency
-3. `android/app/src/main/java/com/myapp/MainApplication.kt` - Registered TrackingSDKPackage
-
-## Usage
-
-### Basic Setup
-
-1. **Import the TrackingSDK**:
-
-```typescript
-import TrackingSDK from './src/TrackingSDK';
+```bash
+npm install react-native-inhouse-sdk
+# or
+yarn add react-native-inhouse-sdk
 ```
 
-2. **Initialize the SDK**:
+### 2. iOS Setup
 
-```typescript
-await TrackingSDK.initialize(
-  'your-project-id',
-  'your-project-token',
-  'your-short-link-domain',
-  'https://your-api-server.com',
-  true, // Enable debug logging
-);
+The SDK uses autolinking, so no manual configuration is needed. Just run:
+
+```bash
+cd ios && pod install
 ```
 
-3. **Add callback listener** (optional):
+### 3. Android Setup
 
-```typescript
-const subscription = TrackingSDK.addCallbackListener(data => {
-  console.log('SDK Callback:', data);
-});
-```
-
-### Available Methods
-
-#### Core Methods
-
-- `initialize(projectId, projectToken, shortLinkDomain, serverUrl?, enableDebugLogging?)` - Initialize the SDK
-- `onAppResume()` - Track app resume events
-- `trackAppOpen(shortLink?)` - Track app open events
-- `trackSessionStart(shortLink?)` - Track session start events
-- `trackShortLinkClick(shortLink, deepLink?)` - Track short link clicks
-
-#### Install Referrer Methods
-
-- `getInstallReferrer()` - Get cached install referrer
-- `fetchInstallReferrer()` - Fetch fresh install referrer
-- `resetFirstInstall()` - Reset first install flag
-
-#### Activity Management
-
-- `setCurrentActivity(activity)` - Set current activity for SDK (internal use only)
-
-#### Event Management
-
-- `addCallbackListener(callback)` - Add callback listener
-- `removeCallbackListener(subscription)` - Remove specific listener
-- `removeAllListeners()` - Remove all listeners
-
-### Example Usage
-
-```typescript
-import React, { useEffect } from 'react';
-import { View, Button } from 'react-native';
-import TrackingSDK from './src/TrackingSDK';
-
-const MyComponent = () => {
-  useEffect(() => {
-    // Initialize SDK
-    const initSDK = async () => {
-      try {
-        await TrackingSDK.initialize(
-          'your-project-id',
-          'your-project-token',
-          'your-domain.com',
-          'https://api.your-domain.com',
-          true,
-        );
-        console.log('SDK initialized successfully');
-      } catch (error) {
-        console.error('SDK initialization failed:', error);
-      }
-    };
-
-    initSDK();
-
-    // Add callback listener
-    const subscription = TrackingSDK.addCallbackListener(data => {
-      console.log('SDK Callback:', data);
-    });
-
-    return () => {
-      subscription.remove();
-    };
-  }, []);
-
-  const handleTrackAppOpen = async () => {
-    try {
-      const result = await TrackingSDK.trackAppOpen('your-short-link');
-      console.log('App open tracked:', result);
-    } catch (error) {
-      console.error('Failed to track app open:', error);
-    }
-  };
-
-  return (
-    <View>
-      <Button title="Track App Open" onPress={handleTrackAppOpen} />
-    </View>
-  );
-};
-```
+The SDK uses React Native's autolinking feature, so no manual configuration is required.
 
 ## Configuration
 
-### Required Parameters
+### Android Configuration
 
-- **projectId**: Your project identifier
-- **projectToken**: Your project authentication token
-- **shortLinkDomain**: Your short link domain
+The SDK will automatically use your project's React Native and dependency versions. You can optionally configure specific versions in your `android/build.gradle`:
 
-### Optional Parameters
-
-- **serverUrl**: Custom server URL (defaults to "https://your-api-server.com")
-- **enableDebugLogging**: Enable debug logging (defaults to false)
-
-## Error Handling
-
-All methods return Promises and should be wrapped in try-catch blocks:
-
-```typescript
-try {
-  const result = await TrackingSDK.trackAppOpen('link');
-  console.log('Success:', result);
-} catch (error) {
-  console.error('Error:', error);
+```gradle
+ext {
+    // SDK will use these versions if available, otherwise fallback to defaults
+    okhttpVersion = '4.12.0'
+    gsonVersion = '2.10.1'
+    installReferrerVersion = '2.2'
+    coroutinesVersion = '1.7.3'
+    coreKtxVersion = '1.12.0'
+    appcompatVersion = '1.6.1'
 }
 ```
 
-## Testing
+### iOS Configuration
 
-Use the provided `TrackingSDKExample.tsx` component to test all SDK functionality. Replace the placeholder values with your actual project credentials.
+The SDK automatically uses your project's React Native version. No additional configuration is needed.
+
+## Usage
+
+### 1. Import the SDK
+
+```typescript
+import TrackingSDK from 'react-native-inhouse-sdk';
+```
+
+### 2. Initialize the SDK
+
+```typescript
+// In your App.tsx or main component
+useEffect(() => {
+  const initializeSDK = async () => {
+    try {
+      await TrackingSDK.initialize(
+        'your-project-id',
+        'your-project-token',
+        'your-shortlink-domain',
+        'https://api.tryinhouse.co', // optional
+        true, // enable debug logging
+      );
+      console.log('SDK initialized successfully');
+    } catch (error) {
+      console.error('Failed to initialize SDK:', error);
+    }
+  };
+
+  initializeSDK();
+}, []);
+```
+
+### 3. Set up Event Listeners
+
+```typescript
+useEffect(() => {
+  const subscription = TrackingSDK.addCallbackListener(data => {
+    console.log('SDK Callback:', data.callbackType, data.data);
+    // Handle SDK callbacks here
+  });
+
+  return () => {
+    TrackingSDK.removeCallbackListener(subscription);
+  };
+}, []);
+```
+
+### 4. Track Events
+
+```typescript
+// Track app open
+const trackAppOpen = async () => {
+  try {
+    const result = await TrackingSDK.trackAppOpen('your-shortlink');
+    console.log('App open tracked:', result);
+  } catch (error) {
+    console.error('Failed to track app open:', error);
+  }
+};
+
+// Track session start
+const trackSessionStart = async () => {
+  try {
+    const result = await TrackingSDK.trackSessionStart('your-shortlink');
+    console.log('Session start tracked:', result);
+  } catch (error) {
+    console.error('Failed to track session start:', error);
+  }
+};
+
+// Track short link click
+const trackShortLinkClick = async () => {
+  try {
+    const result = await TrackingSDK.trackShortLinkClick(
+      'your-shortlink',
+      'your-deeplink',
+    );
+    console.log('Short link click tracked:', result);
+  } catch (error) {
+    console.error('Failed to track short link click:', error);
+  }
+};
+```
+
+### 5. Handle Install Referrer
+
+```typescript
+// Get install referrer
+const getInstallReferrer = async () => {
+  try {
+    const referrer = await TrackingSDK.getInstallReferrer();
+    console.log('Install referrer:', referrer);
+    return referrer;
+  } catch (error) {
+    console.error('Failed to get install referrer:', error);
+  }
+};
+
+// Fetch install referrer (async)
+const fetchInstallReferrer = async () => {
+  try {
+    const referrer = await TrackingSDK.fetchInstallReferrer();
+    console.log('Fetched install referrer:', referrer);
+    return referrer;
+  } catch (error) {
+    console.error('Failed to fetch install referrer:', error);
+  }
+};
+```
+
+### 6. App Lifecycle Management
+
+```typescript
+// Call when app resumes
+const handleAppResume = async () => {
+  try {
+    await TrackingSDK.onAppResume();
+    console.log('App resume tracked');
+  } catch (error) {
+    console.error('Failed to track app resume:', error);
+  }
+};
+
+// Reset first install (for testing)
+const resetFirstInstall = async () => {
+  try {
+    await TrackingSDK.resetFirstInstall();
+    console.log('First install reset');
+  } catch (error) {
+    console.error('Failed to reset first install:', error);
+  }
+};
+```
+
+## Best Practices
+
+### 1. Error Handling
+
+Always wrap SDK calls in try-catch blocks:
+
+```typescript
+try {
+  const result = await TrackingSDK.trackAppOpen('shortlink');
+  // Handle success
+} catch (error) {
+  console.error('SDK error:', error);
+  // Handle error appropriately
+}
+```
+
+### 2. Event Listener Management
+
+Always clean up event listeners:
+
+```typescript
+useEffect(() => {
+  const subscription = TrackingSDK.addCallbackListener(callback);
+
+  return () => {
+    TrackingSDK.removeCallbackListener(subscription);
+  };
+}, []);
+```
+
+### 3. Initialization
+
+Initialize the SDK early in your app lifecycle:
+
+```typescript
+// In App.tsx
+useEffect(() => {
+  initializeSDK();
+}, []);
+
+const initializeSDK = async () => {
+  try {
+    await TrackingSDK.initialize(
+      'project-id',
+      'project-token',
+      'shortlink-domain',
+      'server-url',
+      __DEV__, // enable debug in development
+    );
+  } catch (error) {
+    console.error('SDK initialization failed:', error);
+  }
+};
+```
+
+### 4. TypeScript Support
+
+The SDK provides TypeScript types:
+
+```typescript
+import TrackingSDK, {
+  TrackingSDKCallback,
+  TrackingSDKInterface,
+} from 'react-native-inhouse-sdk';
+
+// Use the types for better type safety
+const handleCallback = (data: TrackingSDKCallback) => {
+  console.log(data.callbackType, data.data);
+};
+```
 
 ## Troubleshooting
 
-1. **Build Errors**: Ensure the Maven dependency is available in your local Maven repository
-2. **Runtime Errors**: Check that the SDK is properly initialized before calling other methods
-3. **Callback Issues**: Ensure callback listeners are properly added and removed to prevent memory leaks
+### Common Issues
 
-## Notes
+1. **Build errors**: Make sure you have the latest React Native version
+2. **Linking issues**: The SDK uses autolinking, but you can manually link if needed
+3. **iOS pod install**: Run `cd ios && pod install` after installation
+4. **Version conflicts**: The SDK uses your project's dependency versions to avoid conflicts
 
-- The SDK requires Android API level 24 or higher
-- All native methods are asynchronous and return Promises
-- Callback events are emitted through React Native's event system
-- The SDK automatically handles activity lifecycle events
+### Debug Mode
+
+Enable debug logging during development:
+
+```typescript
+await TrackingSDK.initialize(
+  'project-id',
+  'project-token',
+  'shortlink-domain',
+  'server-url',
+  __DEV__, // true in development, false in production
+);
+```
+
+### Manual Linking (if needed)
+
+If autolinking doesn't work, you can manually link the SDK:
+
+#### Android
+
+1. Add to `android/settings.gradle`:
+
+```gradle
+include ':react-native-inhouse-sdk'
+project(':react-native-inhouse-sdk').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-inhouse-sdk/android')
+```
+
+2. Add to `android/app/build.gradle`:
+
+```gradle
+dependencies {
+    implementation project(':react-native-inhouse-sdk')
+}
+```
+
+#### iOS
+
+Add to `ios/Podfile`:
+
+```ruby
+pod 'react-native-inhouse-sdk', :path => '../node_modules/react-native-inhouse-sdk'
+```
+
+## API Reference
+
+### Methods
+
+- `initialize(projectId, projectToken, shortLinkDomain, serverUrl?, enableDebugLogging?)`: Initialize the SDK
+- `onAppResume()`: Call when app resumes
+- `trackAppOpen(shortLink?)`: Track app open event
+- `trackSessionStart(shortLink?)`: Track session start
+- `trackShortLinkClick(shortLink, deepLink?)`: Track short link click
+- `getInstallReferrer()`: Get current install referrer
+- `fetchInstallReferrer()`: Fetch install referrer asynchronously
+- `resetFirstInstall()`: Reset first install state
+- `addCallbackListener(callback)`: Add event listener
+- `removeCallbackListener(subscription)`: Remove specific listener
+- `removeAllListeners()`: Remove all listeners
+
+### Types
+
+- `TrackingSDKCallback`: Callback data structure
+- `TrackingSDKInterface`: Main SDK interface
