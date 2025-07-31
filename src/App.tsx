@@ -46,6 +46,7 @@ const App: React.FC = () => {
     useRef<NavigationContainerRef<RootStackParamList>>(null);
   const isProcessingRef = useRef(false);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [isNavigationReady, setIsNavigationReady] = useState(false);
   const [initialRoute, setInitialRoute] = useState<
     keyof RootStackParamList | null
   >(null);
@@ -61,26 +62,59 @@ const App: React.FC = () => {
 
   // Handle navigation stack changes
   useEffect(() => {
-    if (navigationStack.length > 0 && navigationRef.current && initialRoute) {
-      console.log('Processing navigation stack:', navigationStack);
+    console.log('Navigation effect triggered:', {
+      hasNavigationRef: !!navigationRef.current,
+      initialRoute,
+      navigationStackLength: navigationStack.length,
+      isNavigationReady,
+      isProcessing: isProcessingRef.current,
+    });
 
-      // Clear the stack immediately to prevent multiple renders
-      const currentStack = [...navigationStack];
-      setNavigationStack([]);
+    if (navigationRef.current && initialRoute && isNavigationReady) {
+      if (navigationStack.length > 0) {
+        console.log('Processing navigation stack:', navigationStack);
 
-      // Navigate through all routes immediately
-      const processStack = () => {
-        currentStack.forEach(route => {
-          console.log('Navigating to:', route);
-          navigationRef.current?.navigate(route as any);
-        });
+        // Clear the stack immediately to prevent multiple renders
+        const currentStack = [...navigationStack];
+        setNavigationStack([]);
+
+        // Navigate through all routes with a small delay to ensure proper order
+        const processStack = () => {
+          // First navigate to the initial route
+          console.log('Navigating to initial route:', initialRoute);
+          navigationRef.current?.navigate(initialRoute as any);
+
+          // Then navigate through the remaining routes with small delays
+          currentStack.forEach((route, index) => {
+            setTimeout(() => {
+              console.log('Navigating to:', route);
+              navigationRef.current?.navigate(route as any);
+
+              // Set processing to false after the last navigation
+              if (index === currentStack.length - 1) {
+                console.log('Finished processing navigation stack');
+                isProcessingRef.current = false;
+              }
+            }, (index + 1) * 100); // Small delay between navigations
+          });
+        };
+
+        // Process immediately without delays
+        processStack();
+      } else {
+        // If there's only an initial route and no navigation stack
+        console.log('Only initial route, no navigation stack');
+        navigationRef.current?.navigate(initialRoute as any);
         isProcessingRef.current = false;
-      };
-
-      // Process immediately without delays
-      processStack();
+      }
+    } else {
+      console.log('Navigation conditions not met:', {
+        hasNavigationRef: !!navigationRef.current,
+        hasInitialRoute: !!initialRoute,
+        isNavigationReady,
+      });
     }
-  }, [navigationStack, initialRoute]);
+  }, [navigationStack, initialRoute, isNavigationReady]);
 
   // Monitor initial route changes
   useEffect(() => {
@@ -166,10 +200,15 @@ const App: React.FC = () => {
     const routes = parseDeepLink(url);
     console.log('Parsed routes:', routes);
     if (routes.length > 0) {
-      console.log('Setting initial route to:', routes[0]);
-      console.log('Setting navigation stack to:', routes.slice(1));
-      setInitialRoute(routes[0]);
-      setNavigationStack(routes.slice(1)); // Store remaining routes for navigation
+      // Set the first route as initial route (not always Home)
+      const initialRouteFromDeepLink = routes[0];
+      const remainingRoutes = routes.slice(1);
+
+      console.log('Setting initial route to:', initialRouteFromDeepLink);
+      console.log('Setting navigation stack to:', remainingRoutes);
+
+      setInitialRoute(initialRouteFromDeepLink);
+      setNavigationStack(remainingRoutes);
     } else {
       console.log('No valid routes found for deep link');
       isProcessingRef.current = false;
@@ -209,13 +248,16 @@ const App: React.FC = () => {
         const parts = url.split('://');
         if (parts.length > 1) {
           const afterScheme = parts[1];
-          // Always include the entire path after the scheme
-          path = '/' + afterScheme;
+          // Remove query parameters and always include the entire path after the scheme
+          const pathWithoutQuery = afterScheme.split('?')[0];
+          path = '/' + pathWithoutQuery;
         }
       } else {
         // Handle plain path strings like "game1/game2/game1_results"
         if (!url.startsWith('/')) {
-          path = '/' + url;
+          // Remove query parameters
+          const pathWithoutQuery = url.split('?')[0];
+          path = '/' + pathWithoutQuery;
         } else {
           // Fallback to URL constructor for standard URLs
           const uri = new URL(url);
@@ -247,26 +289,39 @@ const App: React.FC = () => {
         referrer_link_data: 'ReferrerLinkData',
       };
 
-      // Build navigation stack from all matching segments
+      // Build navigation stack from all matching segments, ensuring no duplicates
       const routes: (keyof RootStackParamList)[] = [];
+      const seenRoutes = new Set<keyof RootStackParamList>();
 
       for (const segment of pathSegments) {
-        if (routeMap[segment]) {
-          console.log('Matched route:', routeMap[segment]);
-          routes.push(routeMap[segment]);
+        const route = routeMap[segment];
+        if (route && !seenRoutes.has(route)) {
+          console.log('Matched route:', route);
+          routes.push(route);
+          seenRoutes.add(route);
         }
       }
 
-      // Fallback for root path
-      if (routes.length === 0 && (path === '/' || path === '')) {
-        routes.push('Home');
+      // Always ensure Home is at the bottom of the stack
+      const finalRoutes: (keyof RootStackParamList)[] = [];
+
+      // Add Home first if it's not already in the routes
+      if (!routes.includes('Home')) {
+        finalRoutes.push('Home');
       }
 
-      console.log('Navigation stack:', routes);
-      return routes;
+      // Add all other routes
+      routes.forEach(route => {
+        if (route !== 'Home') {
+          finalRoutes.push(route);
+        }
+      });
+
+      console.log('Final navigation stack:', finalRoutes);
+      return finalRoutes;
     } catch (error) {
       console.error('Failed to parse deep link:', error);
-      return [];
+      return ['Home']; // Default to Home
     }
   };
 
@@ -281,10 +336,11 @@ const App: React.FC = () => {
           ref={navigationRef}
           onReady={() => {
             console.log('NavigationContainer is ready');
+            setIsNavigationReady(true);
           }}
         >
           <Stack.Navigator
-            initialRouteName={initialRoute || 'Home'}
+            initialRouteName="Home"
             screenOptions={{
               headerStyle: {
                 backgroundColor: '#6200ee',
