@@ -22,9 +22,6 @@ allprojects {
     repositories {
         google()
         mavenCentral()
-        flatDir {
-            dirs '../node_modules/react-native-inhouse-sdk/android/libs'
-        }
     }
 }
 
